@@ -51,14 +51,29 @@ const UserSchema = new mongoose.Schema(
     },
     tailor: {
       type: mongoose.Schema.Types.ObjectId,
-      // required: true,
       ref: "Tailor",
+    },
+    dressCutter: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DressCutter",
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
     },
   },
   {
     timestamps: true,
   }
 );
+
+UserSchema.post("save", function (error, doc, next) {
+  if (error.name === "MongoError" && error.code === "E11000") {
+    next(new Error("email must be unique"));
+  } else {
+    next(error);
+  }
+});
 
 // module.exports = mongoose.model("User", userSchema);
 // module.exports = UserSchema;
