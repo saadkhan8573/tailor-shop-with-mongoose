@@ -3,6 +3,8 @@ import { errorHandler } from "../utils/errorHandler.js";
 import { userService } from "../services/users.service.js";
 import { tailorService } from "../services/tailor.service.js";
 import { getProfileAndUserDto } from "../utils/getProfileAndUserDto.js";
+import { token } from "../utils/token.js";
+import { roles } from "../models/UserModel.js";
 
 const router = express.Router();
 
@@ -24,6 +26,8 @@ router.route("/").post(
 );
 
 router.route("/").get(
+  token.getUserFromToken,
+
   errorHandler(async (req, res) => {
     const tailors = await tailorService.getAllTailors();
 

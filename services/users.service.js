@@ -6,6 +6,12 @@ const createUser = async (userDto) => {
   return user;
 };
 
+const findUserByEmail = async (email) => {
+  const user = await UserModel.findOne({ email });
+
+  return user;
+};
+
 const getUsers = async () => {
   const users = await UserModel.find()
     .populate("tailor")
@@ -15,6 +21,7 @@ const getUsers = async () => {
 };
 
 export const userService = {
-  createUser,
   getUsers,
+  createUser,
+  findUserByEmail,
 };

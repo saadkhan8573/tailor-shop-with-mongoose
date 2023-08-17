@@ -1,7 +1,8 @@
 // const mongoose = require("mongoose");
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
-const roles = {
+export const roles = {
   Admin: "admin",
   Dayer: "dayer",
   Tailor: "tailor",
@@ -67,11 +68,25 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-UserSchema.post("save", function (error, doc, next) {
-  if (error.name === "MongoError" && error.code === "E11000") {
-    next(new Error("email must be unique"));
-  } else {
-    next(error);
+// UserSchema.post("save", function (error, doc, next) {
+//   if (error.name === "MongoError" && error.code === "E11000") {
+//     next(new Error("email must be unique"));
+//   } else {
+//     next(error);
+//   }
+// });
+
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    return next();
+  } catch (err) {
+    return next(err);
   }
 });
 

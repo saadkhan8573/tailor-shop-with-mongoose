@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 
 // routes
+import aurh from "./controllers/auth.controller.js";
 import user from "./controllers/user.controller.js";
 import dress from "./controllers/dress.controller.js";
 import tailor from "./controllers/tailor.controller.js";
@@ -28,6 +29,7 @@ app.use("/customer", customer);
 app.use("/dresstype", dressType);
 app.use("/dress", dress);
 app.use("/user", user);
+app.use("/auth", aurh);
 
 app.listen(port, () => {
   console.log("Project is running");
