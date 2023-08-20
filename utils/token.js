@@ -3,19 +3,25 @@ import { BadRequestError } from "./error.js";
 
 const generateToken = async (user) => {
   return await jwt.sign(user, process.env.JWTSecret, {
-    expiresIn: "1m",
+    expiresIn: "30m",
   });
 };
 
 const getUserFromToken = (req, res, next) => {
-  const token = req.header("Authorization");
+  const authorization = req.header("Authorization");
 
-  if (!token) {
+  if (!authorization) {
     return res.send(new BadRequestError("You are not authenticated!"));
   }
 
+  const token = authorization.split(" ")[1];
+
   try {
-    const user = jwt.verify(token.split(" ")[1], process.env.JWTSecret);
+    const user = jwt.verify(token, process.env.JWTSecret);
+
+    if (!user) {
+      return res.send(new BadRequestError("User Not Found!"));
+    }
     req.user = user;
     next();
   } catch (err) {
@@ -32,8 +38,6 @@ const restrictToRole = (roles) => (req, res, next) => {
   try {
     const token = authorization.split(" ")[1];
     const user = jwt.decode(token, process.env.JWTSecret);
-
-    console.log("roles.includes(user.role)", roles.includes(user.role));
 
     if (roles.includes(user.role)) return next();
 

@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema(
     },
     username: {
       type: String,
+      unique: true,
       required: [true, "Username is required!"],
     },
     role: {
@@ -90,6 +91,4 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-// module.exports = mongoose.model("User", userSchema);
-// module.exports = UserSchema;
 export default mongoose.model("User", UserSchema);

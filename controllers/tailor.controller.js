@@ -1,16 +1,23 @@
 import express from "express";
+import { token } from "../utils/token.js";
 import { errorHandler } from "../utils/errorHandler.js";
+import { mailService } from "../services/mail.service.js";
 import { userService } from "../services/users.service.js";
 import { tailorService } from "../services/tailor.service.js";
 import { getProfileAndUserDto } from "../utils/getProfileAndUserDto.js";
-import { token } from "../utils/token.js";
-import { roles } from "../models/UserModel.js";
 
 const router = express.Router();
 
 router.route("/").post(
   errorHandler(async (req, res) => {
     const { userDto, profileDto } = getProfileAndUserDto(req.body);
+
+    // const existUser = await userService.findUserByEmail(userDto.email);
+
+    // if (existUser) {
+    //   return res.status(400).send(new BadRequestError("Email Already Exist"));
+    // }
+
     const user = await userService.createUser(userDto);
 
     if (user) {
@@ -19,7 +26,16 @@ router.route("/").post(
         user: user.id,
       });
       user.tailor = tailor;
+
       await user.save();
+
+      if (tailor) {
+        await mailService.sendMail({
+          to: user?.email,
+          subject: "Testing",
+          text: "Saad Khan",
+        });
+      }
       res.status(201).send(tailor);
     }
   })
