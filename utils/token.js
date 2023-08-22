@@ -41,7 +41,9 @@ const restrictToRole = (roles) => (req, res, next) => {
 
     if (roles.includes(user.role)) return next();
 
-    return res.send(new BadRequestError("You are not authenticated!"));
+    return res.send(
+      new BadRequestError("You are not Authorized to access this role!")
+    );
   } catch (err) {
     return next(err);
   }

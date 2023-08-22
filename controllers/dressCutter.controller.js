@@ -7,6 +7,7 @@ import { BadRequestError } from "../utils/error.js";
 import { tailorService } from "../services/tailor.service.js";
 import { token } from "../utils/token.js";
 import { WorkDetail } from "../services/wordDetail.service.js";
+import { roles } from "../models/UserModel.js";
 
 const router = express.Router();
 
@@ -15,9 +16,6 @@ router.route("/").post(
     const { userDto, profileDto } = getProfileAndUserDto(req.body);
 
     const user = await userService.createUser(userDto);
-
-    // const skills = req.body.skills.map((skill) => ({ _id: skill }));
-
     if (user) {
       const dressCutter = await dressCutterService.createDressCutter({
         ...profileDto,
@@ -33,6 +31,8 @@ router.route("/").post(
       dressCutter.validate();
       res.status(201).send(dressCutter);
     }
+
+    // const skills = req.body.skills.map((skill) => ({ _id: skill }));
   })
 );
 
@@ -46,6 +46,24 @@ router.route("/").get(
         .send(new BadRequestError("Dress Cutters Not Found!"));
     }
     res.status(200).send(dressCutter);
+  })
+);
+
+router.route("/profile/me").get(
+  token.getUserFromToken,
+  token.restrictToRole(roles.DressCutter),
+  errorHandler(async (req, res) => {
+    const dressCutter = await dressCutterService.dressCutterProfile(
+      req.user._id
+    );
+
+    if (!dressCutter) {
+      return res
+        .status(400)
+        .send(new BadRequestError("Dress Cutter Not Found!"));
+    }
+
+    res.status(200).send(dressCutter?.length > 0 ? dressCutter[0] : {});
   })
 );
 
@@ -90,6 +108,29 @@ router.route("/send-request-workplace/tailor").post(
     );
 
     res.status(201).send(workDetail);
+  })
+);
+
+router.route("/list/my-workdetail").get(
+  token.getUserFromToken,
+  token.restrictToRole(roles.DressCutter),
+  errorHandler(async (req, res) => {
+    const user = req.user;
+    const dressCutter = await dressCutterService.findDressCutterWithUserId(
+      user._id
+    );
+
+    if (!dressCutter) {
+      return res
+        .send(400)
+        .status(new BadRequestError("Dress Cutter Not Found!"));
+    }
+
+    const workDetail = await WorkDetail.getAllDressCutterWorkDetail(
+      dressCutter._id
+    );
+
+    res.status(200).send(workDetail);
   })
 );
 

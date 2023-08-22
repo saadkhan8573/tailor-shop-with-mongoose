@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import dressCutterModel from "../models/dressCutter.model.js";
 import WorkDetailModel from "../models/workDetail.model.js";
 
@@ -17,6 +18,39 @@ const getDressCutterList = async () => {
     return dressCutterList;
   } catch (error) {
     throw error;
+  }
+};
+
+const dressCutterProfile = async (id) => {
+  try {
+    const isValid = mongoose.Types.ObjectId.isValid(id);
+
+    if (!isValid) {
+      return false;
+    }
+
+    const dressCutter = await dressCutterModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $match: {
+          "user._id": new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $unwind: "$user",
+      },
+    ]);
+
+    return dressCutter;
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -42,6 +76,7 @@ const sendWorkDetailRequestToTailor = async (tailor, dressCutter) => {
 
 export const dressCutterService = {
   createDressCutter,
+  dressCutterProfile,
   getDressCutterList,
   findDressCutterWithUserId,
   sendWorkDetailRequestToTailor,

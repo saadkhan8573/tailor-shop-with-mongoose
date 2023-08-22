@@ -5,6 +5,7 @@ import { mailService } from "../services/mail.service.js";
 import { userService } from "../services/users.service.js";
 import { tailorService } from "../services/tailor.service.js";
 import { getProfileAndUserDto } from "../utils/getProfileAndUserDto.js";
+import { BadRequestError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -48,6 +49,27 @@ router.route("/").get(
     const tailors = await tailorService.getAllTailors();
 
     res.status(200).send(tailors);
+  })
+);
+
+router.route("/filtered/list").get(
+  token.getUserFromToken,
+  errorHandler(async (req, res) => {
+    const tailor = await tailorService.getFilteredTailorList(req.query.search);
+    res.status(200).send(tailor);
+  })
+);
+
+router.route("/profile/me").get(
+  token.getUserFromToken,
+  errorHandler(async (req, res) => {
+    const tailor = await tailorService.getTailorProfile(req.user._id);
+
+    if (!tailor) {
+      return res.status(400).send(new BadRequestError("Tailor Not Found!"));
+    }
+    // console.log("Saad", req.user);
+    res.status(200).send(tailor);
   })
 );
 
